@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_head %}
+  <meta name="api-url" content="{{ url_for('api.complaints') }}">
+  <meta name="is-admin" content="true">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Admin Dashboard</h1>
+    <p class="page-subtitle">Manage all complaints</p>
+  </div>
+  <a href="{{ url_for('admin.audit_log') }}" class="btn btn-secondary">Audit Log</a>
+</div>
+
+<!-- Stat tiles — updated by live.js for admin -->
+<div class="stats-grid" id="stats-grid">
+  <div class="stat-tile" id="stat-total">
+    <div class="stat-number">{{ stats.total }}</div>
+    <div class="stat-label">Total</div>
+  </div>
+  <div class="stat-tile stat-pending" id="stat-pending">
+    <div class="stat-number">{{ stats.Pending }}</div>
+    <div class="stat-label">Pending</div>
+  </div>
+  <div class="stat-tile stat-inprogress" id="stat-inprogress">
+    <div class="stat-number">{{ stats['In Progress'] }}</div>
+    <div class="stat-label">In Progress</div>
+  </div>
+  <div class="stat-tile stat-resolved" id="stat-resolved">
+    <div class="stat-number">{{ stats.Resolved }}</div>
+    <div class="stat-label">Resolved</div>
+  </div>
+</div>
+
+<!-- Live indicator -->
+<div class="live-indicator" id="live-indicator">
+  <span class="live-dot"></span>
+  <span id="live-label">Live</span>
+  <span id="live-time"></span>
+</div>
+
+<!-- Filters -->
+<div class="card filter-card">
+  <form method="GET" action="{{ url_for('admin.dashboard') }}" class="filter-form">
+    <label for="status-filter" class="form-label">Status</label>
+    <select id="status-filter" name="status" class="form-input form-select filter-select">
+      <option value="">All Statuses</option>
+      {% for s in statuses %}
+        <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="cat-filter" class="form-label">Category</label>
+    <select id="cat-filter" name="category" class="form-input form-select filter-select">
+      <option value="">All Categories</option>
+      {% for c in categories %}
+        <option value="{{ c }}" {% if current_category == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-secondary">Filter</button>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost">Clear</a>
+  </form>
+</div>
+
+<!-- Complaints table -->
+{% if complaints %}
+<div class="card table-card">
+  <div class="table-responsive">
+    <table class="complaints-table" id="complaints-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="complaints-tbody">
+        {% for c in complaints %}
+        <tr data-id="{{ c.id }}" data-status="{{ c.status }}">
+          <td>{{ c.id }}</td>
+          <td>{{ c.student_name }}</td>
+          <td class="complaint-title">{{ c.title }}</td>
+          <td><span class="category-tag">{{ c.category }}</span></td>
+          <td><span class="status-badge status-{{ c.status | replace(' ', '-') | lower }}">{{ c.status }}</span></td>
+          <td class="date-cell">{{ c.created_at[:16] }}</td>
+          <td class="action-cell">
+            {% if c.status == 'Pending' %}
+              <button class="btn btn-sm btn-action" data-id="{{ c.id }}" data-next="In Progress">
+                Mark In Progress
+              </button>
+            {% elif c.status == 'In Progress' %}
+              <button class="btn btn-sm btn-resolve" data-id="{{ c.id }}" data-next="Resolved">
+                Mark Resolved
+              </button>
+            {% else %}
+              <span class="resolved-label">✔ Resolved</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state" id="empty-state">
+  <div class="empty-icon">📭</div>
+  <h3>No complaints match your filters</h3>
+  <p><a href="{{ url_for('admin.dashboard') }}">Clear filters</a> to see all complaints.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<!-- admin.js handles status-update fetch; live.js handles polling -->
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/live.js') }}" defer></script>
+{% endblock %}
