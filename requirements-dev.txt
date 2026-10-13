@@ -1,0 +1,4 @@
+# requirements-dev.txt
+# Development and testing dependencies only — do NOT install on production
+-r requirements.txt
+pytest==8.2.2

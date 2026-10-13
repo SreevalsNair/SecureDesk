@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SecureDesk{% endblock %} | SecureDesk</title>
+  <!-- Security: CSRF token in meta tag so JS can read it without inline scripts -->
+  {% if csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Sticky navbar -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a href="{{ url_for('main.index') }}" class="brand-link">🔒 SecureDesk</a>
+    </div>
+    <div class="navbar-menu">
+      {% if current_user.is_authenticated %}
+        <span class="nav-user">{{ current_user.name }}
+          <span class="role-badge role-{{ current_user.role }}">{{ current_user.role }}</span>
+        </span>
+        {% if current_user.role == 'admin' %}
+          <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+          <a class="nav-link" href="{{ url_for('admin.audit_log') }}">Audit Log</a>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('complaints.dashboard') }}">My Complaints</a>
+          <a class="nav-link" href="{{ url_for('complaints.new_complaint') }}">New Complaint</a>
+        {% endif %}
+        <a class="nav-link nav-logout" href="{{ url_for('auth.logout') }}">Log Out</a>
+      {% else %}
+        <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+        <a class="nav-link nav-cta" href="{{ url_for('auth.register') }}">Register</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    SecureDesk &mdash; Secure Complaint Management
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

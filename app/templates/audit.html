@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Audit Log</h1>
+    <p class="page-subtitle">All security events, newest first — Page {{ page }} of {{ total_pages }}</p>
+  </div>
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Dashboard</a>
+</div>
+
+<div class="card table-card">
+  <div class="table-responsive">
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Detail</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr class="audit-row audit-{{ row.action }}">
+          <td class="date-cell">{{ row.timestamp }}</td>
+          <td>
+            {% if row.user_name %}
+              {{ row.user_name }}<br>
+              <small class="text-muted">{{ row.user_email }}</small>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td><span class="audit-action audit-action-{{ row.action | replace('_', '-') }}">{{ row.action }}</span></td>
+          <td class="audit-detail">{{ row.detail or '—' }}</td>
+          <td class="mono">{{ row.ip_address or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="empty-cell">No audit entries yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+    <a href="{{ url_for('admin.audit_log', page=page-1) }}" class="btn btn-ghost">&laquo; Previous</a>
+  {% endif %}
+  <span class="page-info">{{ page }} / {{ total_pages }} ({{ total }} entries)</span>
+  {% if page < total_pages %}
+    <a href="{{ url_for('admin.audit_log', page=page+1) }}" class="btn btn-ghost">Next &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

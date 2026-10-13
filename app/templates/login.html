@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="card auth-card">
+    <h1 class="card-title">Log In</h1>
+    <p class="card-subtitle">Welcome back to SecureDesk</p>
+
+    {% if errors.general %}
+      <div class="field-error field-error-banner">{{ errors.general }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+      <!-- Security: CSRF hidden field — Flask-WTF injects this automatically -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="email" class="form-label">Email address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="{{ form_data.get('email', '') if form_data else '' }}"
+          class="form-input {% if errors.email %}input-error{% endif %}"
+          autocomplete="username"
+          required
+        >
+        {% if errors.email %}
+          <span class="field-error">{{ errors.email }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input {% if errors.password %}input-error{% endif %}"
+          autocomplete="current-password"
+          required
+        >
+        {% if errors.password %}
+          <span class="field-error">{{ errors.password }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">Log In</button>
+    </form>
+
+    <p class="auth-switch">
+      Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

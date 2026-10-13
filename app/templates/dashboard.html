@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}My Complaints{% endblock %}
+
+{% block extra_head %}
+  <!-- data-api-url used by live.js — no inline scripts -->
+  <meta name="api-url" content="{{ url_for('api.complaints') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Complaints</h1>
+    <p class="page-subtitle">Track the status of your submitted complaints</p>
+  </div>
+  <a href="{{ url_for('complaints.new_complaint') }}" class="btn btn-primary">
+    + New Complaint
+  </a>
+</div>
+
+<!-- Live indicator — updated by live.js -->
+<div class="live-indicator" id="live-indicator">
+  <span class="live-dot"></span>
+  <span id="live-label">Live</span>
+  <span id="live-time"></span>
+</div>
+
+{% if complaints %}
+<div class="card table-card">
+  <div class="table-responsive">
+    <table class="complaints-table" id="complaints-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody id="complaints-tbody">
+        {% for c in complaints %}
+        <tr data-id="{{ c.id }}">
+          <td>{{ c.id }}</td>
+          <td class="complaint-title">{{ c.title }}</td>
+          <td><span class="category-tag">{{ c.category }}</span></td>
+          <td><span class="status-badge status-{{ c.status | replace(' ', '-') | lower }}">{{ c.status }}</span></td>
+          <td class="date-cell">{{ c.created_at[:16] }}</td>
+          <td class="date-cell">{{ c.updated_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state" id="empty-state">
+  <div class="empty-icon">📋</div>
+  <h3>No complaints yet</h3>
+  <p>Submit your first complaint using the button above.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/live.js') }}" defer></script>
+{% endblock %}
